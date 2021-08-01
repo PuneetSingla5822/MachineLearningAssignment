@@ -52,9 +52,9 @@ training_new <- training[inTrain,]
 validation_new <- training[-inTrain,]
 ```
 
-And we will use the K-fold technique to use our new training set to train our model.
+We will use the K-fold technique to train our model. In terms of the number of folds, we will go with 10 folds. That would leave ~1,000 samples in each fold for testing.
 
-As for the model itself, we will use the Random Forest model to train.
+As for the model itself, we will use the Random Forest model to train. We are going for this model primarily due to the accuracy.
 
 ```{r model_calc, include=TRUE, cache=FALSE}
 ## Use the K-Fold method to train the model on new training set
@@ -65,17 +65,21 @@ mdlfit <- train(classe ~ ., method="rf", data = training_new, trControl = mdlctr
 
 ## Evaluate Model Performance
 
-Let's see how are model performed on the training set.
+Now that we have our model, let's see performance our model on the training set.
 
 ```{r include=TRUE}
 table(training_new$classe, predict(mdlfit,training_new))
 ```
+
+Amazing!! 100% accuracy on the training set. However, this may also be an indication of overfitting.
 
 Next, let's see performance of our model on the validation set.
 
 ```{r include=TRUE}
 table(validation_new$classe,predict(mdlfit,validation_new))
 ```
+
+We have almost `r paste(round((confusionMatrix(validation_new$classe,predict(mdlfit,validation_new))$overall[1])*100,2), "%", sep="")` accuracy.
 
 Lastly, out of sample error rate of this model is estimated to be `r paste(round((1-confusionMatrix(validation_new$classe,predict(mdlfit,validation_new))$overall[1])*100,2), "%", sep="")`
 

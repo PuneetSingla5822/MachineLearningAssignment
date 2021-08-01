@@ -414,8 +414,8 @@ dim(training)</code></pre>
 inTrain &lt;- createDataPartition(training$classe, p = 1/2)[[1]]
 training_new &lt;- training[inTrain,]
 validation_new &lt;- training[-inTrain,]</code></pre>
-<p>And we will use the K-fold technique to use our new training set to train our model.</p>
-<p>As for the model itself, we will use the Random Forest model to train.</p>
+<p>We will use the K-fold technique to train our model. In terms of the number of folds, we will go with 10 folds. That would leave ~1,000 samples in each fold for testing.</p>
+<p>As for the model itself, we will use the Random Forest model to train. We are going for this model primarily due to the accuracy.</p>
 <pre class="r"><code>## Use the K-Fold method to train the model on new training set
 mdlctrl &lt;- trainControl(method = &quot;cv&quot;, number = 10, savePredictions = &quot;all&quot;)
 
@@ -423,7 +423,7 @@ mdlfit &lt;- train(classe ~ ., method=&quot;rf&quot;, data = training_new, trCon
 </div>
 <div id="evaluate-model-performance" class="section level2">
 <h2>Evaluate Model Performance</h2>
-<p>Let’s see how are model performed on the training set.</p>
+<p>Now that we have our model, let’s see performance our model on the training set.</p>
 <pre class="r"><code>table(training_new$classe, predict(mdlfit,training_new))</code></pre>
 <pre><code>##    
 ##        A    B    C    D    E
@@ -432,6 +432,7 @@ mdlfit &lt;- train(classe ~ ., method=&quot;rf&quot;, data = training_new, trCon
 ##   C    0    0 1711    0    0
 ##   D    0    0    0 1608    0
 ##   E    0    0    0    0 1804</code></pre>
+<p>Amazing!! 100% accuracy on the training set. However, this may also be an indication of overfitting.</p>
 <p>Next, let’s see performance of our model on the validation set.</p>
 <pre class="r"><code>table(validation_new$classe,predict(mdlfit,validation_new))</code></pre>
 <pre><code>##    
@@ -441,6 +442,7 @@ mdlfit &lt;- train(classe ~ ., method=&quot;rf&quot;, data = training_new, trCon
 ##   C    0   21 1681    9    0
 ##   D    0    0   21 1586    1
 ##   E    0    4    6    2 1791</code></pre>
+<p>We have almost 98.57% accuracy.</p>
 <p>Lastly, out of sample error rate of this model is estimated to be 1.43%</p>
 </div>
 
