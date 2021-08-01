@@ -54,32 +54,53 @@ validation_new <- training[-inTrain,]
 
 We will use the K-fold technique to train our model. In terms of the number of folds, we will go with 10 folds. That would leave ~1,000 samples in each fold for testing.
 
-As for the model itself, we will use the Random Forest model to train. We are going for this model primarily due to the accuracy.
+As for the model itself, we will experiment with following models:
+
+1. Decision Trees
+2. Random Forest
+3. Gradient Boosting Machine
 
 ```{r model_calc, include=TRUE, cache=FALSE}
 ## Use the K-Fold method to train the model on new training set
 mdlctrl <- trainControl(method = "cv", number = 10, savePredictions = "all")
 
-mdlfit <- train(classe ~ ., method="rf", data = training_new, trControl = mdlctrl)
+mdlfit_rpart <- train(classe ~ ., method="rpart", data = training_new, trControl = mdlctrl)
+mdlfit_rf <- train(classe ~ ., method="rf", data = training_new, trControl = mdlctrl)
+mdlfit_gbm <- train(classe ~ ., method="gbm", data = training_new, trControl = mdlctrl, verbose = FALSE)
 ```
 
 ## Evaluate Model Performance
 
-Now that we have our model, let's see performance our model on the training set.
+Now that we have our models, let's see performance our models.
+
+### Decision Trees
+
+Decision Tree performance on Test & Validation datasets.
 
 ```{r include=TRUE}
-table(training_new$classe, predict(mdlfit,training_new))
+confusionMatrix(training_new$classe, predict(mdlfit_rpart,training_new))
+confusionMatrix(validation_new$classe,predict(mdlfit_rpart,validation_new))
 ```
 
-Amazing!! 100% accuracy on the training set. However, this may also be an indication of overfitting.
+We have `r paste(round((confusionMatrix(validation_new$classe,predict(mdlfit_rpart,validation_new))$overall[1])*100,2), "%", sep="")` accuracy & out of sample error rate of this model is estimated to be `r paste(round((1-confusionMatrix(validation_new$classe,predict(mdlfit_rpart,validation_new))$overall[1])*100,2), "%", sep="")`
 
-Next, let's see performance of our model on the validation set.
+### Random Forest
 
 ```{r include=TRUE}
-table(validation_new$classe,predict(mdlfit,validation_new))
+confusionMatrix(training_new$classe, predict(mdlfit_rf,training_new))
+confusionMatrix(validation_new$classe,predict(mdlfit_rf,validation_new))
 ```
 
-We have almost `r paste(round((confusionMatrix(validation_new$classe,predict(mdlfit,validation_new))$overall[1])*100,2), "%", sep="")` accuracy.
+We have `r paste(round((confusionMatrix(validation_new$classe,predict(mdlfit_rf,validation_new))$overall[1])*100,2), "%", sep="")` accuracy & out of sample error rate of this model is estimated to be `r paste(round((1-confusionMatrix(validation_new$classe,predict(mdlfit_rf,validation_new))$overall[1])*100,2), "%", sep="")`
 
-Lastly, out of sample error rate of this model is estimated to be `r paste(round((1-confusionMatrix(validation_new$classe,predict(mdlfit,validation_new))$overall[1])*100,2), "%", sep="")`
+### Gradient Boosting Machine
+
+```{r include=TRUE}
+confusionMatrix(training_new$classe, predict(mdlfit_gbm,training_new))
+confusionMatrix(validation_new$classe,predict(mdlfit_gbm,validation_new))
+```
+
+We have `r paste(round((confusionMatrix(validation_new$classe,predict(mdlfit_gbm,validation_new))$overall[1])*100,2), "%", sep="")` accuracy & out of sample error rate of this model is estimated to be `r paste(round((1-confusionMatrix(validation_new$classe,predict(mdlfit_gbm,validation_new))$overall[1])*100,2), "%", sep="")`
+
+In conclusion, Random Forest model gave us the best performance. So, we will be using Random Forest model to predict for test observations for the quiz.
 
